@@ -31,6 +31,7 @@ CREATE TABLE hero (
     roles hero_roles[],
     img character varying,
     icon character varying,
+    img_data bytea,
     base_health int,
     base_health_regen real,
     base_mana int,
