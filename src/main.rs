@@ -1,15 +1,18 @@
 extern crate serde_json;
+extern crate hex;
 
 use std::fs::File;
 use std::io::prelude::*;
 use std::io;
 use std::path::Path;
+use error::ProcError;
 
 mod heroes;
 mod abilities;
 mod hero_ability;
 mod items;
 mod common;
+mod error;
 
 fn main(){
     println!("process heroes: {:?}",process_heroes());
@@ -44,23 +47,6 @@ fn process_heroes() -> Result<(), ProcError> {
 }
 
 
-#[derive(Debug)]
-enum ProcError{
-    IoError(io::Error),
-    SerdeError(serde_json::Error)
-}
-
-impl From<io::Error> for ProcError{
-    fn from(e: io::Error) -> Self {
-        ProcError::IoError(e)
-    }
-}
-
-impl From<serde_json::Error> for ProcError {
-    fn from(e: serde_json::Error) -> Self {
-        ProcError::SerdeError(e)
-    }
-}
 
 fn save_to_file(filename: &str, content: &str) -> Result<(), io::Error> {
     let path = Path::new(filename);
