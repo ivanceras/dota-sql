@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 use serde_json::{self, Value, Error};
+use std::fs::File;
+use std::io::Read;
+use std::io;
 
 pub fn parse_ids(content: &str) -> Result<HashMap<u32, String>, Error>{
     let ability_ids = serde_json::from_str(content)?;
@@ -23,4 +26,11 @@ pub fn find_id(ids: &HashMap<u32,String>, ability: &str) -> Option<u32> {
         }
     }
     None
+}
+
+pub fn read_file(img_path: &str) -> io::Result<Vec<u8>>{
+    let mut file = File::open(img_path)?;
+    let mut content = Vec::new();
+    file.read_to_end(&mut content)?;
+    Ok(content)
 }
