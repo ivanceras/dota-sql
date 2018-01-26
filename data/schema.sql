@@ -82,7 +82,8 @@ CREATE TABLE ability (
     attrib json,
     mc real[],
     cd real[],
-    img character varying
+    img character varying,
+    img_data bytea
 );
 
 CREATE type quality AS ENUM (
@@ -100,6 +101,7 @@ CREATE TABLE item (
     key character varying not null,
     name character varying,
     img character varying not null,
+    img_data bytea,
     qual quality,
     cost int,
     description character varying,
