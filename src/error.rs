@@ -4,7 +4,8 @@ use std::io;
 #[derive(Debug)]
 pub enum ProcError{
     IoError(io::Error),
-    SerdeError(serde_json::Error)
+    SerdeError(serde_json::Error),
+    GenericError(String),
 }
 
 impl From<io::Error> for ProcError{

@@ -1,9 +1,8 @@
 use serde_json::{self, Value, Error};
-use std::io;
-use std::fs::File;
-use std::io::Read;
 use error::ProcError;
 use hex;
+use common;
+use std::io;
 
 pub fn parse_heroes() -> Result<String, ProcError> {
     let heroes_json = include_str!("../json/hero_names.json");
@@ -12,7 +11,7 @@ pub fn parse_heroes() -> Result<String, ProcError> {
     match hero{
         Value::Object(map) => {
             for (k,v) in map.iter(){
-                let sql = parse_hero(v)?;
+                let sql:String = parse_hero(v)?;
                 hero_sql += &sql;
             }
         }
@@ -21,12 +20,6 @@ pub fn parse_heroes() -> Result<String, ProcError> {
     Ok(hero_sql)
 }
 
-fn read_file(img_path: &str) -> io::Result<Vec<u8>>{
-    let mut file = File::open(img_path)?;
-    let mut content = Vec::new();
-    file.read_to_end(&mut content)?;
-    Ok(content)
-}
 
 fn parse_hero(v: &Value) -> io::Result<String> {
     let id = &v["id"];
@@ -51,10 +44,10 @@ fn parse_hero(v: &Value) -> io::Result<String> {
     let img_path = img.replace("/apps/dota2/images/heroes/","assets/heroes/");
     let img_path = img_path.trim_right_matches('?');
     println!("img path: {}", img_path);
-    let content = read_file(img_path)?;
-    //println!("content: {:?}", content);
+    let content = common::read_file(&img_path)?;
+    // image data is encoded to hex and encoded back to binary in postgresql
+    // to be stored as bytea using the postgresql decode function
     let img_hex = hex::encode(content);
-    println!("hex: {}", img_hex);
     let icon = &v["icon"].as_str().unwrap();
     let base_health = &v["base_health"];
     let base_health_regen= &v["base_health_regen"];

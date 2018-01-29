@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 use serde_json::{self, Value, Error};
 use common;
+use hex;
+use std::io;
+use error::ProcError;
 
 
-pub fn parse_abilities() -> Result<String, Error> {
+pub fn parse_abilities() -> Result<String, ProcError> {
     let abilities_json = include_str!("../json/abilities.json");
     let abilities: Value = serde_json::from_str(abilities_json)?;
     let ids: HashMap<u32, String> = parse_ability_ids()?;
@@ -11,7 +14,7 @@ pub fn parse_abilities() -> Result<String, Error> {
     match abilities{
         Value::Object(map) => {
             for (k,v) in map.iter(){
-                let sql = parse_ability(&ids, k, v);
+                let sql = parse_ability(&ids, k, v)?;
                 abilities_sql += &sql;
             }
         }
@@ -26,7 +29,7 @@ fn parse_ability_ids() -> Result<HashMap<u32, String>, Error>{
 }
 
 
-fn parse_ability(ids: &HashMap<u32, String>, key: &str, v: &Value) -> String {
+fn parse_ability(ids: &HashMap<u32, String>, key: &str, v: &Value) -> Result<String, ProcError> {
     let id = common::find_id(ids, key);
     if let Some(id) = id {
         let dname = &v["dname"].as_str();
@@ -121,17 +124,30 @@ fn parse_ability(ids: &HashMap<u32, String>, key: &str, v: &Value) -> String {
         };
         let img = &v["img"].as_str();
         let img = if let Some(img) = *img {
-            format!("'{}'", img)
+            format!("{}", img)
         }else{
             "NULL".to_string()
         };
 
+        let img_path = format!("assets/abilities/{}_lg.png",key);
+        println!("img_path: {}", img_path);
+        let img_data = common::read_file(&img_path);
+        let img_hex = match img_data{
+            Ok(img_data) => {
+                let img_hex = hex::encode(img_data);
+                format!("decode('{}', 'hex')",img_hex)
+            }
+            Err(e) => {
+                format!("NULL")
+            }
+        };
+
         let sql = format!("\nINSERT INTO ability 
-VALUES({}, '{}', {}, {}, {}, {}, {}, '{}', {}, {}, {});"
-                          , id, key, dname, behavior, dmg_type, bkbpierce, desc, attrib, mc, cd, img);
-        sql
+VALUES({}, '{}', {}, {}, {}, {}, {}, '{}', {}, {}, '{}', {});"
+                          , id, key, dname, behavior, dmg_type, bkbpierce, desc, attrib, mc, cd, img, img_hex);
+        Ok(sql)
     }
     else {
-        "".to_string()
+       Ok("".to_string())
     }
 }
