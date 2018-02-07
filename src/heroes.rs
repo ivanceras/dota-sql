@@ -1,11 +1,22 @@
 use serde_json::{self, Value, Error};
 use error::ProcError;
 use hex;
+#[macro_use]
 use common;
 use std::io;
 
+macro_rules! some {
+    ($expr: expr) => {
+        {
+            let value = $expr;
+            assert!(value.is_some());
+            value.unwrap()
+        }
+    }
+}
+
 pub fn parse_heroes() -> Result<String, ProcError> {
-    let heroes_json = include_str!("../json/hero_names.json");
+    let heroes_json = include_str!("../dotaconstants/build/hero_names.json");
     let hero: Value = serde_json::from_str(heroes_json)?;
     let mut hero_sql = String::new();
     match hero{
@@ -23,10 +34,10 @@ pub fn parse_heroes() -> Result<String, ProcError> {
 
 fn parse_hero(v: &Value) -> io::Result<String> {
     let id = &v["id"];
-    let key = &v["name"].as_str().unwrap();
-    let localized_name = &v["localized_name"].as_str().unwrap().replace("'","''");
-    let primary_attr = &v["primary_attr"].as_str().unwrap();
-    let attack_type = &v["attack_type"].as_str().unwrap();
+    let key = some!(&v["name"].as_str());
+    let localized_name = some!(&v["localized_name"].as_str()).replace("'","''");
+    let primary_attr = some!(&v["primary_attr"].as_str());
+    let attack_type = some!(&v["attack_type"].as_str());
     let roles = &v["roles"];
     let mut role_str = String::new();
     match *roles{
@@ -35,12 +46,12 @@ fn parse_hero(v: &Value) -> io::Result<String> {
                 if i > 0 {
                     role_str += ", ";
                 }
-                role_str += role.as_str().unwrap()
+                role_str += some!(role.as_str())
             }
         },
         _ => panic!("roles should be in array"),
     };
-    let img = &v["img"].as_str().unwrap();
+    let img = some!(&v["img"].as_str());
     let img_path = img.replace("/apps/dota2/images/heroes/","assets/heroes/");
     let img_path = img_path.trim_right_matches('?');
     println!("img path: {}", img_path);
@@ -48,7 +59,7 @@ fn parse_hero(v: &Value) -> io::Result<String> {
     // image data is encoded to hex and encoded back to binary in postgresql
     // to be stored as bytea using the postgresql decode function
     let img_hex = hex::encode(content);
-    let icon = &v["icon"].as_str().unwrap();
+    let icon = some!(&v["icon"].as_str());
     let base_health = &v["base_health"];
     let base_health_regen= &v["base_health_regen"];
     let base_mana= &v["base_mana"];

@@ -7,7 +7,7 @@ use error::ProcError;
 
 
 pub fn parse_abilities() -> Result<String, ProcError> {
-    let abilities_json = include_str!("../json/abilities.json");
+    let abilities_json = include_str!("../dotaconstants/build/abilities.json");
     let abilities: Value = serde_json::from_str(abilities_json)?;
     let ids: HashMap<u32, String> = parse_ability_ids()?;
     let mut abilities_sql = String::new();
@@ -24,7 +24,7 @@ pub fn parse_abilities() -> Result<String, ProcError> {
 }
 
 fn parse_ability_ids() -> Result<HashMap<u32, String>, Error>{
-    let ability_ids_json = include_str!("../json/ability_ids.json");
+    let ability_ids_json = include_str!("../dotaconstants/build/ability_ids.json");
     common::parse_ids(ability_ids_json)
 }
 

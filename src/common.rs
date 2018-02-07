@@ -34,3 +34,4 @@ pub fn read_file(img_path: &str) -> io::Result<Vec<u8>>{
     file.read_to_end(&mut content)?;
     Ok(content)
 }
+

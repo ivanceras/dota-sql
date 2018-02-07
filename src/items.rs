@@ -7,7 +7,7 @@ use std::io;
 use error::ProcError;
 
 pub fn parse_items() -> Result<String, ProcError> {
-    let items_json = include_str!("../json/items.json");
+    let items_json = include_str!("../dotaconstants/build/items.json");
     let items: Value = serde_json::from_str(items_json)?;
     let mut item_sql = String::new();
     match items {
@@ -98,13 +98,17 @@ fn parse_item(key: &str, v: &Value) -> io::Result<String> {
             if i > 0 {
                 comp_str += ", ";
             }
-            comp_str += comp.as_str().unwrap()
+            let comp_value = comp.as_str();
+            assert!(comp_value.is_some());
+            comp_str += comp_value.unwrap()
         }
         format!("'{{{}}}'",comp_str)
     }else{
         "NULL".to_string()
     };
-    let created = &v["created"].as_bool().unwrap();
+    let created = &v["created"].as_bool();
+    assert!(created.is_some());
+    let created = created.unwrap();
     let mut sql = String::new();
     sql += &format!("\n\nINSERT INTO item
 VALUES({}, {}, {}, '{}', {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});"
